@@ -1,0 +1,6 @@
+.env
+/src/generated/prisma
+bash.exe.stackdump
+package-lock.json
+/node_modules
+transactions.log
