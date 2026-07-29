@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-       postgres:
+      postgres:
         image: postgres:16
         env:
           POSTGRES_USER: postgres
@@ -30,7 +30,7 @@ jobs:
         with: 
           node-version: 24
       - run: npm ci
-        working-directory: finance_api
+        working-directory: finance-api
       - run: npx prisma migrate deploy
         working-directory: finance-api
       - run: npm run types
