@@ -17,6 +17,21 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+  app:
+    build: .
+    container_name: finance-api-app
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_LEVEL: info
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
 
 volumes:
   postgres_data:
