@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config/index.ts';
 import { UnauthorizedError } from '../errors/AppError.ts';
 import type { Request, Response, NextFunction } from 'express';
+import type { Role } from '../types/role.ts';
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const header = req.headers.authorization;
@@ -21,7 +22,9 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
             throw new UnauthorizedError('Invalid or expired token.');
         }
 
-        req.user = { id: payload.sub };
+        const role: Role = payload.role === 'admin' ? 'admin' : 'user';
+
+        req.user = { id: payload.sub, role };
         next();
     } catch (err) {
         next (new UnauthorizedError('Invalid or expired token.'));

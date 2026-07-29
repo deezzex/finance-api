@@ -4,6 +4,7 @@ import { prisma } from '../db/prismaClient.ts';
 import { config } from '../config/index.ts';
 import { ConflictError, UnauthorizedError } from '../errors/AppError.ts';
 import type { RegisterInput, LoginInput } from '../schemas/auth.schema.ts';
+import type { Role } from '../types/role.ts';
 
 const SALT_ROUND = 12;
 const DUMMY_HASH = await bcrypt.hash('no-such-user', SALT_ROUND);
@@ -39,7 +40,7 @@ export async function loginUser({ email, password }: LoginInput) {
         throw new UnauthorizedError('Invalid email or password');
     }
 
-    const token = jwt.sign({ sub: user.id }, config.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ sub: user.id, role: user.role as Role }, config.JWT_SECRET, { expiresIn: '1h' });
 
     return { token };
 }
