@@ -6,7 +6,8 @@ export type AppErrorCode =
     | 'UNAUTHORIZED'
     | 'CONFLICT'
     | 'INTERNAL_ERROR'
-    | 'FORBIDDEN';
+    | 'FORBIDDEN'
+    | 'RATE_LIMITED';
 
 export class AppError extends Error {
     statusCode: number;
@@ -60,5 +61,11 @@ export class ConflictError extends AppError {
 export class ForbiddenError extends AppError {
     constructor(message = 'You do not have permission to perform this action.') {
         super(403, 'FORBIDDEN', message);
+    }
+}
+
+export class RateLimitedError extends AppError {
+    constructor(message = 'Too many transfer attempts, try again shortly.') {
+        super(429, 'RATE_LIMITED', message);
     }
 }

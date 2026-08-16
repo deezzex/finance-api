@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as adminController from '../controllers/admin.controller.ts';
 import { validate } from '../middleware/validate.ts';
-import { accountIdParamSchema } from '../schemas/accounts.schema.ts';
+import { accountIdParamSchema } from '../schemas/admin.schema.ts';
 
 const router = Router();
 

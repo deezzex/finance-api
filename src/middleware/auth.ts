@@ -14,8 +14,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const token = header.slice('Bearer '.length);
 
     try{
-        const payload = jwt.verify(token, config.JWT_SECRET, {
-            algorithms: ['HS256']
+        const payload = jwt.verify(token, config.JWT_PUBLIC_KEY, {
+            algorithms: ['RS256']
         });
 
          if (typeof payload === 'string' || !payload.sub) {

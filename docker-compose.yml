@@ -11,12 +11,108 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  
+  auth_postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: auth_service
+    ports: 
+      - "5433:5432"
+    volumes: 
+      - auth_postgres_data:/var/lib/postgresql/data
+
+  accounts_postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: accounts_service
+    ports:
+      - "5434:5432"
+    volumes:
+      - accounts_postgres_data:/var/lib/postgresql/data
+  
+  transfers_postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: transfers_service
+    ports:
+      - "5435:5432"
+    volumes:
+      - transfers_postgres_data:/var/lib/postgresql/data
+
   redis:
     image: redis:7-alpine
     container_name: finance-api-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
+  
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: finance-api-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@auth_postgres:5432/auth_service?schema=public
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      LOG_LEVEL: info
+    ports: 
+      - "3001:3001"
+    depends_on: 
+      - auth_postgres
+
+  accounts-service:
+    build:
+      context: .
+      dockerfile: services/accounts-service/Dockerfile
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@accounts_postgres:5432/accounts_service?schema=public
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      LOG_LEVEL: info
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3002:3002"
+    depends_on:
+      - accounts_postgres
+      - redis
+
+  transfers-service:
+    build:
+      context: .
+      dockerfile: services/transfers-service/Dockerfile
+    environment:
+      PORT: 3003
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@transfers_postgres:5432/transfers_service?schema=public
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      LOG_LEVEL: info
+      REDIS_URL: redis://redis:6379
+      ACCOUNTS_SERVICE_URL: http://accounts-service:3002
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+    ports:
+      - "3003:3003"
+    depends_on:
+      - transfers_postgres
+      - redis
+      - accounts-service
+      - rabbitmq
+
   app:
     build: .
     container_name: finance-api-app
@@ -25,7 +121,7 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
       LOG_LEVEL: info
     ports:
       - "3000:3000"
@@ -35,3 +131,6 @@ services:
 
 volumes:
   postgres_data:
+  auth_postgres_data:
+  accounts_postgres_data:
+  transfers_postgres_data:

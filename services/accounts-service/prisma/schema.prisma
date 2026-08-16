@@ -1,0 +1,16 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Account {
+  id        String   @id @default(uuid())
+  ownerId   String
+  balance   Decimal  @default(0) @db.Decimal(12, 2)
+  currency  String   @db.Char(3)
+  createdAt DateTime @default(now())
+}

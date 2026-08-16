@@ -11,5 +11,8 @@
     "verbatimModuleSyntax": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "services/transfers-service/controllers/transfers.controller.ts", "services/transfers-service/schemas/transfers.schema.ts"],
+  "references": [
+    { "path": "packages/shared" }
+  ]
 }

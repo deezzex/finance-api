@@ -2,12 +2,18 @@
   "name": "finance-api",
   "version": "0.1.0",
   "private": true,
+   "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
   "type": "module",
   "description": "Capstone project for the Node.js learning plan — accounts and money transfers.",
   "scripts": {
     "start": "node src/index.ts",
     "worker": "node src/queue/transferReceiptWorker.ts",
-    "types": "tsc --noEmit",
+    "audit-worker": "node src/audit/auditLogWorker.ts",
+    "build:shared": "npm run build --workspace=@finance-api/shared",
+    "types": "npm run build:shared && tsc --noEmit",
     "test": "vitest run"
   },
   "main": "index.js",
@@ -17,8 +23,10 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.8.0",
+    "amqplib": "^0.10.9",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.81.2",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -31,7 +39,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.10.7",
     "@types/bcrypt": "^6.0.0",
+    "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",

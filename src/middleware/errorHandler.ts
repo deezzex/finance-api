@@ -2,19 +2,23 @@ import { AppError } from "../errors/AppError.ts";
 import type { ErrorRequestHandler } from "express";
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-    const isKnown = err instanceof AppError;
-
-    if(!isKnown) {
-        req.log.error({err}, 'Unhandled error');
+    if (err instanceof AppError) {
+        res.status(err.statusCode).json({
+            error: {
+                code: err.code,
+                message: err.message,
+                ...(err.details ? { details: err.details } : {})
+            }
+        });
+        return;
     }
 
-    res.status(
-        isKnown ? err.statusCode : 500
-    ).json({
+    req.log.error({ err }, 'Unhandled error');
+
+    res.status(500).json({
         error: {
-            code: isKnown ? err.code : 'INTERNAL_ERROR',
-            message: isKnown ? err.message : 'Something went wrong.',
-            ...(err.details ? { details : err.details } : {})
+            code: 'INTERNAL_ERROR',
+            message: 'Something went wrong.'
         }
     });
 }
